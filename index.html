@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NETVIBE - CYBER ANIME HQ</title>
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{
+    overflow:hidden;
+    font-family:"Tahoma", sans-serif;
+    background:#0a0014;
+    color:#fff;
+    cursor: default;
+  }
+
+  .background{
+    position:fixed; inset:0;
+    background: radial-gradient(circle at 30% 20%, #ff00ff 0%, transparent 60%),
+                radial-gradient(circle at 70% 80%, #00ffff 0%, transparent 60%),
+                #120022;
+  }
+
+  .nebula{
+    position:absolute; inset:0;
+    background: radial-gradient(circle at 20% 40%, rgba(255,0,255,0.18), transparent 50%),
+                radial-gradient(circle at 80% 60%, rgba(0,255,255,0.18), transparent 50%);
+    animation: nebulaMove 50s linear infinite;
+  }
+  @keyframes nebulaMove { 0% { transform: translate(0, 0); } 100% { transform: translate(90px, -70px); } }
+
+  .star{ position:absolute; background:white; border-radius:50%; animation: twinkle 1.8s infinite alternate; }
+  .grid{
+    position:absolute; inset:0;
+    background-image: linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),
+                      linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);
+    background-size:40px 40px;
+    transform:perspective(700px) rotateX(78deg);
+    animation:gridMove 7s linear infinite;
+    opacity:0.45;
+  }
+  @keyframes gridMove{ from{ background-position-y:0; } to{ background-position-y:40px; } }
+  @keyframes twinkle{ from{ opacity:0.3; transform:scale(0.7); } to{ opacity:1; transform:scale(1.5); } }
+
+  .glow{
+    position:absolute; width:700px; height:700px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,20,147,.4), transparent 70%);
+    filter:blur(70px); pointer-events:none; transform:translate(-50%,-50%);
+  }
+
+  .desktop{ position:relative; z-index:10; width:100vw; height:100vh; }
+
+  .topbar{
+    width:100%; height:42px;
+    background:linear-gradient(#ff00ff, #990099);
+    border-bottom:3px solid #00ffff;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 15px; color:white; font-weight:bold;
+    text-shadow: 2px 2px 0 #000;
+  }
+  .logo{ font-size:19px; letter-spacing:5px; text-transform:uppercase; }
+
+  /* Fixed Desktop Icons */
+  .icons{ position:absolute; top:80px; left:40px; }
+  .icon{
+    width:92px; text-align:center; cursor: pointer; position: absolute;
+    transition: transform 0.15s ease; user-select: none;
+  }
+  .icon:hover{ transform: scale(1.12); }
+  .icon-img{
+    width:74px; height:74px; border:3px solid #fff; border-radius:14px;
+    background:linear-gradient(135deg, #ff00ff, #00ffcc);
+    display:flex; align-items:center; justify-content:center;
+    font-size:34px; box-shadow:0 0 18px #ffff00;
+  }
+  .icon span{ display:block; margin-top:8px; font-size:12.5px; text-shadow:1px 1px 3px #000; }
+
+  /* Windows */
+  .window{
+    position:absolute; width:430px; min-height:290px;
+    background: rgba(18, 0, 35, 0.68);
+    border: 3px solid rgba(0, 255, 255, 0.95);
+    box-shadow: 0 8px 32px rgba(255, 0, 255, 0.5), inset 0 0 60px rgba(255,255,255,0.18);
+    overflow:hidden; border-radius:8px; backdrop-filter: blur(20px);
+  }
+  .window.hidden{ display:none; }
+
+  .window-top{
+    height:38px;
+    background:linear-gradient(to right, #ff00ff, #00ffff);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 12px; color:#000; font-weight:bold; font-size:13.5px;
+    cursor: move;
+  }
+  .window-controls{
+    display:flex; gap:4px;
+  }
+  .window-controls span{
+    cursor:pointer; font-size:17px; padding:0 8px; line-height:1;
+  }
+  .window-controls span:hover{ background:rgba(0,0,0,0.45); color:#fff; border-radius:3px; }
+
+  .window-body{ padding:15px; background: rgba(22, 0, 38, 0.65); }
+
+  #gameCanvas{ background:#000; border:3px solid #ff00ff; image-rendering:pixelated; }
+
+  .cd{
+    width:120px; height:120px; border-radius:50%;
+    background: radial-gradient(circle, #ddd, #888, #222);
+    border: 6px solid #fff;
+    box-shadow: 0 0 25px #ff00ff, inset 0 0 20px #000;
+    margin: 15px auto;
+    animation: spin 4s linear infinite paused;
+  }
+  .cd.playing{ animation-play-state: running; }
+  @keyframes spin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+  .progress-bar{
+    height:6px; background:#00ffff; width:0%; margin:10px 0;
+    box-shadow: 0 0 8px #00ffff;
+  }
+
+  .chat{ height:200px; overflow:auto; font-size:13px; line-height:1.6; margin-bottom:10px; }
+  .chat-input{
+    width:100%; background:rgba(0,0,0,0.5); border:2px solid #00ffff;
+    color:white; padding:9px; font-family:inherit;
+  }
+
+  /* Taskbar */
+  .taskbar{
+    position:fixed; bottom:0; left:0; right:0; height:48px;
+    background:linear-gradient(#220033, #110022);
+    border-top:3px solid #00ffff;
+    display:flex; align-items:center; padding:0 4px;
+    z-index: 300;
+    box-shadow: 0 -4px 15px rgba(0,255,255,0.3);
+  }
+  .start-btn{
+    background:linear-gradient(#ff00ff, #990099);
+    border:2px solid #00ffff;
+    color:white; padding:6px 18px; font-weight:bold; margin:0 6px; cursor:pointer;
+  }
+  .taskbar-item{
+    background:rgba(255,255,255,0.1);
+    border:1px solid #00ffff;
+    padding:5px 12px;
+    margin:0 3px;
+    font-size:12px;
+    cursor:pointer;
+    white-space:nowrap;
+    max-width:160px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .taskbar-item.active{
+    background:rgba(255,0,255,0.3);
+    border-color:#ffff00;
+  }
+</style>
+</head>
+<body>
+
+<div class="background">
+  <div class="nebula"></div>
+  <div class="grid"></div>
+  <div class="glow" id="glow"></div>
+</div>
+
+<div class="desktop">
+  <header class="topbar">
+    <div class="logo">✦ NETVIBE ✦</div>
+    <div style="font-size:13px;">EST. 2003 • ONLINE NOW</div>
+  </header>
+
+  <!-- Fixed Desktop Icons -->
+  <div class="icons">
+    <div class="icon" data-window="game" id="icon-game" style="left:50px; top:90px;">
+      <div class="icon-img">🎮</div>
+      <span>GAME.exe</span>
+    </div>
+    <div class="icon" data-window="music" id="icon-music" style="left:180px; top:90px;">
+      <div class="icon-img">💿</div>
+      <span>MUSIC.mp3</span>
+    </div>
+    <div class="icon" data-window="chat" id="icon-chat" style="left:310px; top:90px;">
+      <div class="icon-img">💬</div>
+      <span>CYBERCHAT.exe</span>
+    </div>
+  </div>
+
+  <!-- Windows -->
+  <div class="window game-window" id="game-window" style="top:100px; left:280px;">
+    <div class="window-top">
+      TETRIS.exe
+      <div class="window-controls">
+        <span class="minimize-btn">□</span>
+        <span class="close-btn">✕</span>
+      </div>
+    </div>
+    <div class="window-body">
+      <div style="margin-bottom:8px;">SCORE: <span id="score">0</span></div>
+      <canvas id="gameCanvas" width="280" height="560"></canvas>
+    </div>
+  </div>
+
+  <div class="window music-window" id="music-window" style="top:130px; left:450px;">
+    <div class="window-top">
+      winamp_player.exe
+      <div class="window-controls">
+        <span class="minimize-btn">□</span>
+        <span class="close-btn">✕</span>
+      </div>
+    </div>
+    <div class="window-body">
+      <div style="text-align:center;">
+        <div id="cd" class="cd"></div>
+        <div id="track-title" style="margin:10px 0; font-weight:bold;">NIGHTCORE - ANGEL OF DARKNESS</div>
+        <div style="display:flex; justify-content:center; gap:15px; margin:15px 0;">
+          <button id="prev-btn">◀◀</button>
+          <button id="play-btn">▶</button>
+          <button id="next-btn">▶▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="window chat-window" id="chat-window" style="top:160px; left:180px;">
+    <div class="window-top">
+      CYBERCHAT.exe
+      <div class="window-controls">
+        <span class="minimize-btn">□</span>
+        <span class="close-btn">✕</span>
+      </div>
+    </div>
+    <div class="window-body">
+      <div class="chat" id="chat-messages"></div>
+      <input type="text" class="chat-input" id="chat-input" placeholder="Type message...">
+    </div>
+  </div>
+</div>
+
+<!-- Taskbar -->
+<div class="taskbar">
+  <div class="start-btn">✦ NETVIBE</div>
+  <div id="taskbar-items" style="display:flex; align-items:center; flex:1;"></div>
+</div>
+
+<script>
+// Background
+const background = document.querySelector(".background");
+for(let i = 0; i < 200; i++){
+  const star = document.createElement("div");
+  star.classList.add("star");
+  const size = Math.random() * 3.5 + 1;
+  star.style.width = size + "px";
+  star.style.height = size + "px";
+  star.style.left = Math.random() * 100 + "%";
+  star.style.top = Math.random() * 100 + "%";
+  background.appendChild(star);
+}
+
+const glow = document.getElementById("glow");
+document.addEventListener("mousemove", e => {
+  glow.style.left = e.clientX + "px";
+  glow.style.top = e.clientY + "px";
+});
+
+// Draggable Windows
+function makeDraggable(win) {
+  const topBar = win.querySelector(".window-top");
+  let isDragging = false;
+  let offsetX, offsetY;
+
+  topBar.addEventListener("mousedown", (e) => {
+    if (e.target.classList.contains("close-btn") || e.target.classList.contains("minimize-btn")) return;
+    isDragging = true;
+    const rect = win.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    win.style.zIndex = 1000;
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    let newX = Math.max(10, Math.min(e.clientX - offsetX, window.innerWidth - win.offsetWidth - 10));
+    let newY = Math.max(10, Math.min(e.clientY - offsetY, window.innerHeight - win.offsetHeight - 100));
+    win.style.left = newX + "px";
+    win.style.top = newY + "px";
+  });
+
+  document.addEventListener("mouseup", () => isDragging = false);
+}
+
+const windows = {
+  game: document.getElementById("game-window"),
+  music: document.getElementById("music-window"),
+  chat: document.getElementById("chat-window")
+};
+
+Object.values(windows).forEach(win => makeDraggable(win));
+
+// Open windows from icons
+document.querySelectorAll(".icon").forEach(icon => {
+  icon.addEventListener("click", () => {
+    windows[icon.dataset.window].classList.remove("hidden");
+    windows[icon.dataset.window].style.zIndex = 1000;
+  });
+});
+
+// Minimize & Close
+document.querySelectorAll(".minimize-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    btn.closest(".window").classList.add("hidden");
+  });
+});
+
+document.querySelectorAll(".close-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    btn.closest(".window").classList.add("hidden");
+  });
+});
+</script>
+</body>
+</html>
