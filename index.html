@@ -1,355 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>NETVIBE — NIGHT CITY HUD</title>
-<style>
-:root {
-  --yellow: #fcee0a;
-  --cyan: #00f0ff;
-  --cyan-dim: rgba(0, 240, 255, 0.3);
-  --bg: #020406;
-  --panel: rgba(5, 10, 15, 0.85);
-  --border: rgba(0, 240, 255, 0.5);
-  --text-dim: #73808a;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NETVIBE // NEURAL_LINK_STABLE</title>
+    <style>
+        :root {
+            --yellow: #fcee0a;
+            --cyan: #00f0ff;
+            --cyan-dim: rgba(0, 240, 255, 0.15);
+            --gold: #c8b060;
+            --bg: #020406;
+            --red: #ff003c;
+            --magenta: #ff00ff;
+            --green: #00ff9d;
+        }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-html { cursor: none; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { cursor: none; overflow: hidden; }
 
-body {
-  background: var(--bg);
-  background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1515462277126-2dd0c162007a?auto=format&fit=crop&q=80&w=2000');
-  background-size: cover;
-  background-position: center;
-  color: #fff;
-  font-family: 'Courier New', Courier, monospace;
-  height: 100vh;
-  overflow: hidden;
-  user-select: none;
-}
+        body {
+            background: var(--bg);
+            background-image: radial-gradient(circle at center, #0a1a22 0%, #020406 100%);
+            color: #fff; font-family: 'Courier New', Courier, monospace;
+            height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center;
+        }
 
-/* ── SCANLINES ── */
-body::before {
-  content: " ";
-  position: fixed; inset: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-  background-size: 100% 3px, 3px 100%;
-  pointer-events: none; z-index: 9999;
-}
+        /* ── CRT SCANLINES ── */
+        body::before {
+            content: ""; position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px; pointer-events: none; z-index: 9999;
+        }
 
-/* ── CURSOR (RESTORING ORIGINAL) ── */
-#cur {
-  position:fixed; width:32px; height:36px; pointer-events:none;
-  z-index:100000; transform:translate(-4px,-2px);
-  filter: drop-shadow(0 0 6px var(--cyan));
-}
+        #cur {
+            position:fixed; width:32px; height:36px; pointer-events:none;
+            z-index:100000; transform:translate(-4px,-2px);
+            filter: drop-shadow(0 0 6px var(--cyan));
+        }
 
-/* ── HUD ELEMENTS ── */
-.hud-box {
-  position: absolute;
-  border: 1px solid var(--cyan-dim);
-  padding: 8px 12px;
-  background: rgba(0, 20, 30, 0.4);
-  font-size: 12px;
-  letter-spacing: 2px;
-}
+        /* ── KEYSTONE MAIN CHASSIS ── */
+        .deck-frame {
+            width: 96vw; height: 94vh;
+            border: 8px solid var(--gold); border-radius: 20px;
+            background: rgba(2, 5, 8, 0.98);
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
+        }
 
-.identity { top: 30px; left: 30px; color: var(--cyan); border-left: 4px solid var(--cyan); }
-.weather { top: 30px; right: 30px; text-align: right; border-right: 4px solid var(--cyan); }
-.weather span { display: block; color: var(--cyan); font-size: 18px; }
+        /* ── PERMANENT TASKBAR ── */
+        .keystone-taskbar {
+            height: 110px; display: flex; border-bottom: 2px solid var(--cyan-dim);
+            background: rgba(0, 20, 30, 0.3);
+        }
+        .task-tab {
+            flex: 1; border-right: 1px solid var(--cyan-dim);
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 0 30px; cursor: pointer; transition: 0.2s;
+        }
+        .task-tab:hover { background: var(--cyan-dim); }
+        .task-tab.active { background: rgba(0, 240, 255, 0.1); border-bottom: 4px solid var(--cyan); }
+        .task-tab h2 { font-size: 20px; letter-spacing: 4px; color: var(--cyan); text-transform: uppercase; }
+        .task-tab span { font-size: 8px; opacity: 0.5; margin-top: 4px; letter-spacing: 1px; }
 
-/* ── CENTER CLOCK ── */
-.center-hud {
-  position: absolute; top: 12%; left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  width: 100%;
-}
-.greeting { color: var(--yellow); font-size: 20px; letter-spacing: 8px; margin-bottom: 10px; }
-.clock { 
-    font-size: 80px; color: var(--cyan); font-weight: bold; 
-    text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
-    letter-spacing: 5px;
-}
-.date { color: var(--yellow); letter-spacing: 4px; font-size: 14px; margin-top: 5px; }
+        /* ── HUD CLOCK AREA ── */
+        .hud-center {
+            padding: 20px 0; text-align: center; border-bottom: 1px solid var(--cyan-dim);
+        }
+        .world-mood { color: var(--yellow); font-size: 13px; letter-spacing: 6px; margin-bottom: 5px; text-transform: uppercase; }
+        .clock { font-size: 72px; color: var(--cyan); font-weight: bold; letter-spacing: 8px; text-shadow: 0 0 15px var(--cyan-dim); }
+        .status-msg { color: var(--yellow); font-size: 11px; letter-spacing: 3px; margin-top: 5px; height: 1.2em;}
 
-/* ── SEARCH BAR ── */
-.search-container {
-  display: flex; justify-content: center; margin-top: 30px;
-}
-.search-box {
-  background: rgba(0, 40, 60, 0.6);
-  border: 1px solid var(--cyan);
-  width: 400px; padding: 10px 20px;
-  color: var(--cyan); outline: none;
-  font-family: inherit;
-}
-.scan-btn {
-  background: var(--yellow); color: #000;
-  border: none; padding: 0 25px;
-  font-weight: bold; letter-spacing: 2px; cursor: pointer;
-}
+        /* ── CONTENT AREA ── */
+        .deck-body { flex: 1; padding: 25px; overflow-y: auto; }
+        .pane { display: none; }
+        .pane.active { display: block; }
 
-/* ── QUOTE ── */
-.quote-box {
-  margin-top: 40px; text-align: center; font-style: italic;
-  color: var(--cyan); opacity: 0.8; font-size: 14px;
-}
-.quote-author { color: var(--yellow); font-size: 12px; margin-top: 10px; display: block; }
+        /* ── DASHBOARD (MESSAGES + MUSIC TOGETHER) ── */
+        .dashboard { display: grid; grid-template-columns: 1fr 380px; gap: 20px; height: 440px; }
 
-/* ── NETLINKS ── */
-.netlinks {
-  position: absolute; left: 30%; top: 55%;
-  width: 40%;
-}
-.section-label { color: var(--yellow); font-size: 14px; letter-spacing: 3px; border-bottom: 1px solid rgba(252, 238, 10, 0.3); padding-bottom: 5px; margin-bottom: 15px; }
-.link-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .msg-window {
+            border: 1px solid var(--cyan-dim); background: #000;
+            display: flex; flex-direction: column; height: 100%;
+        }
+        .msg-header { background: var(--cyan); color: #000; padding: 8px 15px; font-weight: bold; font-size: 12px; letter-spacing: 1px; }
+        .msg-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .msg-entry { margin-bottom: 25px; border-bottom: 1px dashed rgba(0,240,255,0.1); padding-bottom: 12px; }
+        .msg-sender { font-weight: bold; font-size: 10px; letter-spacing: 2px; display: block; margin-bottom: 6px; }
+        .msg-text { font-size: 14px; line-height: 1.5; color: #cedde0; }
 
-.link-item {
-  border: 1px solid var(--cyan);
-  background: rgba(0, 240, 255, 0.05);
-  height: 80px; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  cursor: pointer; transition: 0.2s;
-}
-.link-item:hover { background: rgba(0, 240, 255, 0.2); transform: scale(1.05); box-shadow: 0 0 15px var(--cyan-dim); }
-.link-item span { font-size: 9px; margin-top: 8px; color: var(--cyan); }
+        .music-sidebar {
+            border: 1px solid var(--cyan-dim); background: rgba(0, 20, 30, 0.6);
+            padding: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .eq-container { display: flex; align-items: flex-end; gap: 3px; height: 80px; margin-bottom: 20px; }
+        .eq-bar { width: 6px; background: var(--cyan); min-height: 2px; box-shadow: 0 0 10px var(--cyan); transition: height 0.1s; }
+        #track-name { font-size: 10px; color: var(--yellow); text-align: center; margin-bottom: 20px; letter-spacing: 1px; min-height: 25px; line-height: 1.3; }
 
-/* ── WINDOWS (DRAGGABLE) ── */
-.window {
-  position: absolute; top: 150px; left: 150px;
-  width: 400px; background: var(--panel);
-  border: 1px solid var(--cyan);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
-  z-index: 1000; display: none;
-}
-.win-header {
-  background: var(--cyan); color: #000;
-  padding: 5px 10px; font-weight: bold; font-size: 11px;
-  display: flex; justify-content: space-between; cursor: move;
-}
-.win-close { cursor: pointer; }
-.win-body { padding: 15px; min-height: 200px; }
+        .music-btn { 
+            background: none; border: 1px solid var(--cyan); color: var(--cyan); 
+            padding: 12px; width: 100%; margin-bottom: 10px; cursor: pointer; 
+            font-family: inherit; font-size: 11px; letter-spacing: 2px; font-weight: bold;
+        }
+        .music-btn:hover { background: var(--cyan); color: #000; }
+        .music-btn.init { background: var(--yellow); color: #000; border-color: var(--yellow); margin-bottom: 20px; }
 
-/* ── CYBERPUNK EQUALIZER ── */
-.eq-container {
-  display: flex; align-items: flex-end; gap: 2px;
-  height: 50px; margin-top: 15px;
-}
-.eq-bar { width: 4px; background: var(--cyan); min-height: 2px; }
-.eq-readout { font-size: 10px; color: var(--yellow); margin-top: 10px; }
+        /* ── NET DATABASE ── */
+        .net-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .net-card { border: 1px solid var(--cyan-dim); padding: 30px; text-align: center; cursor: pointer; background: rgba(0,0,0,0.3); transition: 0.2s; }
+        .net-card:hover { border-color: var(--cyan); background: var(--cyan-dim); }
 
-</style>
+        @keyframes johnny { 0%, 100% { transform: translate(0); } 20% { transform: translate(-2px, 1px); } 40% { transform: translate(2px, -1px); } }
+        .glitch { animation: johnny 0.3s infinite; color: var(--red)!important; }
+    </style>
 </head>
 <body>
 
-<!-- Custom Cursor -->
-<svg id="cur" viewBox="0 0 32 36" xmlns="http://www.w3.org/2000/svg">
-  <g fill="none" stroke="#00f0ff" stroke-width="1.4" stroke-linejoin="round">
-    <rect x="13" y="4" width="6" height="14" rx="3"/>
-    <rect x="19" y="10" width="5.5" height="11" rx="2.5"/>
-    <rect x="19" y="21" width="5.5" height="7" rx="2.5"/>
-    <rect x="7" y="12" width="5.5" height="9" rx="2.5"/>
-    <path d="M7 20 Q6 28 10 31 L23 31 Q27 28 26 21"/>
-    <circle cx="16" cy="5" r="1.5" fill="#00f0ff" opacity="0.7"/>
-  </g>
-</svg>
+<svg id="cur" viewBox="0 0 32 36"><g fill="none" stroke="#00f0ff" stroke-width="1.4"><rect x="13" y="4" width="6" height="14" rx="3"/><rect x="19" y="10" width="5.5" height="11" rx="2.5"/><rect x="19" y="21" width="5.5" height="7" rx="2.5"/><rect x="7" y="12" width="5.5" height="9" rx="2.5"/><path d="M7 20 Q6 28 10 31 L23 31 Q27 28 26 21"/><circle cx="16" cy="5" r="1.5" fill="#00f0ff"/></g></svg>
 
-<!-- Static HUD -->
-<div class="hud-box identity">IDENTITY // V_684</div>
-<div class="hud-box weather">
-  <span>13°C</span>
-  NIGHT CITY // CLEAR SKY
-</div>
+<div class="deck-frame">
+    <header class="keystone-taskbar">
+        <div class="task-tab active" id="tab0" onclick="switchPane(0)">
+            <h2>Communications</h2>
+            <span>INCOMING_SIGNALS // AUDIO_LINK</span>
+        </div>
+        <div class="task-tab" id="tab1" onclick="switchPane(1)">
+            <h2>Net Database</h2>
+            <span>NETDIR://NCITY.PUB</span>
+        </div>
+        <div class="task-tab">
+            <h2 style="opacity:0.2">System</h2>
+            <span>ENCRYPTION: 256-BIT // ACTIVE</span>
+        </div>
+    </header>
 
-<div class="center-hud">
-  <div class="greeting" id="greeting">Night, V</div>
-  <div class="clock" id="clock">00:00</div>
-  <div class="date" id="date">TUESDAY, JUNE 3, 2025</div>
-
-  <div class="search-container">
-    <input type="text" class="search-box" placeholder="Search with Arasaka Net...">
-    <button class="scan-btn">SCAN</button>
-  </div>
-
-  <div class="quote-box">
-    "You know the first thing they teach you? All the ways you can die."
-    <span class="quote-author">— Jackie Welles</span>
-  </div>
-</div>
-
-<div class="netlinks">
-  <div class="section-label">ENTERTAINMENT</div>
-  <div class="link-grid">
-    <div class="link-item" onclick="toggleWin('win-music')">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-      <span>AFTERLIFE.FM</span>
+    <div class="hud-center">
+        <div class="world-mood" id="world-mood">INITIALIZING...</div>
+        <div class="clock" id="clock">00:00</div>
+        <div class="status-msg" id="status-msg">SYSTEM NOTICE: YOU ARE NOT ALONE.</div>
     </div>
-    <div class="link-item" onclick="toggleWin('win-game')">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 12h4m-2-2v4m7-1h.01m2.99-3h.01"></path></svg>
-      <span>SIMULATOR</span>
-    </div>
-  </div>
 
-  <div class="section-label">SOCIAL</div>
-  <div class="link-grid">
-    <div class="link-item">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-      <span>NETWATCH</span>
+    <div class="deck-body">
+        <div class="pane active" id="pane-0">
+            <div class="dashboard">
+                <div class="msg-window">
+                    <div class="msg-header">INCOMING_SIGNALS // ENCRYPTED</div>
+                    <div class="msg-content">
+                        <div class="msg-entry"><span class="msg-sender glitch">JOHNNY</span><span class="msg-text">Wake up, samurai. We got a city to burn. Glitch consciousness rising.</span></div>
+                        <div class="msg-entry"><span class="msg-sender" style="color:var(--magenta)">JUDY</span><span class="msg-text">Hey V. You're my only emotional anchor in this ghost town. Call me?</span></div>
+                        <div class="msg-entry"><span class="msg-sender" style="color:var(--green)">VIKTOR</span><span class="msg-text">Tech's looking frayed. Come by the clinic before your optics fry.</span></div>
+                        <div class="msg-entry"><span class="msg-sender" style="color:var(--gold)">FIXER</span><span class="msg-text">New job board updated. Street life doesn't wait for anyone.</span></div>
+                        <div class="msg-entry"><span class="msg-sender" style="color:var(--cyan)">DELAMAIN</span><span class="msg-text">AI City System online. Your vehicle route is being monitored.</span></div>
+                        <div class="msg-entry"><span class="msg-sender" style="color:#fff">ARASAKA</span><span class="msg-text">Surveillance pressure active. Every step you take is logged, V.</span></div>
+                    </div>
+                </div>
+                <div class="music-sidebar">
+                    <button class="music-btn init" id="initBtn" onclick="initializeMusic()">INITIALIZE NEURAL LINK</button>
+                    <div class="eq-container" id="eq"></div>
+                    <div id="track-name">AUDIO LINK: OFFLINE</div>
+                    <div id="yt-player" style="position: absolute; left: -9999px;"></div>
+                    <button class="music-btn" id="playBtn" onclick="togglePlay()">PLAY_SIGNAL</button>
+                    <button class="music-btn" onclick="changeTrack(1)">NEXT_FREQUENCY</button>
+                    <button class="music-btn" onclick="changeTrack(-1)">PREV_FREQUENCY</button>
+                </div>
+            </div>
+        </div>
+        <div class="pane" id="pane-1">
+            <div class="net-grid">
+                <div class="net-card">ARASAKA // DIRECTORY</div>
+                <div class="net-card">TRAUMA_TEAM // PORTAL</div>
+                <div class="net-card">MILITECH // SECURE_LINE</div>
+                <div class="net-card">AFTERLIFE // NETWORK</div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-
-<!-- MUSIC WINDOW -->
-<div class="window" id="win-music">
-  <div class="win-header">
-    <span>AUDIO_LINK // PLAYER</span>
-    <span class="win-close" onclick="toggleWin('win-music')">✕</span>
-  </div>
-  <div class="win-body">
-    <div id="yt-player"></div>
-    <div class="eq-readout" id="track-name">LINKING TO FREQUENCY...</div>
-    
-    <div class="eq-container" id="eq"></div>
-    
-    <div style="display:flex; justify-content: space-between; margin-top:20px;">
-      <button onclick="changeTrack(-1)" style="background:none; border:1px solid var(--cyan); color:var(--cyan); padding:5px 10px; cursor:pointer;">PREV</button>
-      <button onclick="togglePlay()" id="playBtn" style="background:var(--cyan); border:none; color:#000; padding:5px 20px; font-weight:bold; cursor:pointer;">PLAY</button>
-      <button onclick="changeTrack(1)" style="background:none; border:1px solid var(--cyan); color:var(--cyan); padding:5px 10px; cursor:pointer;">NEXT</button>
-    </div>
-  </div>
-</div>
-
-<!-- GAME WINDOW -->
-<div class="window" id="win-game">
-  <div class="win-header">
-    <span>SYSTEM_TEST // SIMULATOR</span>
-    <span class="win-close" onclick="toggleWin('win-game')">✕</span>
-  </div>
-  <div class="win-body">
-    <p style="color:var(--yellow)">[CRITICAL ERROR]</p>
-    <p style="font-size:12px; margin-top:10px;">Simulation core requires neural link. Please visit a Ripperdoc.</p>
-  </div>
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-// ── CURSOR ──
-const cur = document.getElementById("cur");
-document.addEventListener("mousemove", e => {
-  cur.style.left = e.clientX + "px";
-  cur.style.top  = e.clientY + "px";
-});
+    const cur = document.getElementById("cur");
+    document.addEventListener("mousemove", e => { cur.style.left = e.clientX + "px"; cur.style.top = e.clientY + "px"; });
 
-// ── CLOCK & DATE ──
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2, '0');
-  const m = String(now.getMinutes()).padStart(2, '0');
-  document.getElementById('clock').textContent = `${h}:${m}`;
-  
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('date').textContent = now.toLocaleDateString('en-US', options).toUpperCase();
-  
-  const greeting = now.getHours() < 12 ? "Morning, V" : (now.getHours() < 18 ? "Day, V" : "Night, V");
-  document.getElementById('greeting').textContent = greeting;
-}
-setInterval(updateClock, 1000);
-updateClock();
+    function updateHUD() {
+        const now = new Date();
+        const hrs = now.getHours();
+        const moods = [
+            {h: 5, m: "LOW TRAFFIC GRID / CLEAN SIGNALS", s: "WELCOME BACK, V. NOTHING HAS CHANGED."},
+            {h: 11, m: "CORPORATE NETWORKS ACTIVE", s: "SYSTEM NOTICE: YOU ARE NOT ALONE."},
+            {h: 17, m: "NEON LOAD PEAK / DATA FLOW HIGH", s: "GOOD EVENING, V. THE CITY IS STILL WATCHING."},
+            {h: 23, m: "BLACKOUT SECTORS RISING", s: "SYSTEM NOTICE: YOU ARE NOT ALONE."}
+        ];
+        let current = moods[moods.length-1];
+        for(let i=0; i<moods.length; i++) { if(hrs >= moods[i].h) current = moods[i]; }
+        document.getElementById('world-mood').textContent = current.m;
+        document.getElementById('status-msg').textContent = current.s;
+        document.getElementById('clock').textContent = String(hrs).padStart(2,'0') + ":" + String(now.getMinutes()).padStart(2,'0');
+    }
+    setInterval(updateHUD, 1000); updateHUD();
 
-// ── DRAGGABLE WINDOWS ──
-function makeDraggable(win) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  const header = win.querySelector(".win-header");
-  header.onmousedown = dragMouseDown;
+    function switchPane(idx) {
+        document.querySelectorAll('.task-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab'+idx).classList.add('active');
+        document.getElementById('pane-'+idx).classList.add('active');
+    }
 
-  function dragMouseDown(e) {
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
-    win.style.zIndex = 2000; // Bring to front
-  }
+    let player, isPlaying = false, ytReady = false;
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('yt-player', {
+            height: '1', width: '1',
+            playerVars: { 'listType': 'playlist', 'list': 'PLDisKgcnAC4SqX0mi1J5_gd7-hrIS5yJp', 'autoplay': 0, 'controls': 0 },
+            events: { 'onReady': () => { ytReady = true; }, 'onStateChange': onPlayerStateChange }
+        });
+    }
 
-  function elementDrag(e) {
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    win.style.top = (win.offsetTop - pos2) + "px";
-    win.style.left = (win.offsetLeft - pos1) + "px";
-  }
+    function initializeMusic() { if (ytReady) { player.playVideo(); document.getElementById('initBtn').style.display = 'none'; } }
+    function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.PLAYING) {
+            isPlaying = true; document.getElementById('playBtn').textContent = "PAUSE_SIGNAL";
+            document.getElementById('track-name').textContent = "STREAMING: " + player.getVideoData().title;
+            updateEq();
+        } else { isPlaying = false; document.getElementById('playBtn').textContent = "PLAY_SIGNAL"; }
+    }
+    function togglePlay() { if (ytReady) isPlaying ? player.pauseVideo() : player.playVideo(); }
+    function changeTrack(dir) { if (ytReady) dir > 0 ? player.nextVideo() : player.previousVideo(); }
 
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
-}
-document.querySelectorAll(".window").forEach(makeDraggable);
-
-function toggleWin(id) {
-  const w = document.getElementById(id);
-  w.style.display = (w.style.display === 'block') ? 'none' : 'block';
-}
-
-// ── MUSIC PLAYER & EQUALIZER ──
-const playlist = ['gzbLODUb1sA', 'AN1RJF55NXI', 'yvlP4KYW7BE'];
-let trackIdx = 0;
-let player;
-let isPlaying = false;
-
-function onYouTubeIframeAPIReady() {
-  player = new YT.Player('yt-player', {
-    height: '0', width: '0', videoId: playlist[trackIdx],
-    events: { 'onStateChange': onStateChange }
-  });
-}
-
-function onStateChange(e) {
-  if (e.data == YT.PlayerState.PLAYING) {
-    isPlaying = true;
-    document.getElementById('playBtn').textContent = "PAUSE";
-    document.getElementById('track-name').textContent = "STREAMING FREQUENCY: " + playlist[trackIdx];
-    updateEq();
-  } else {
-    isPlaying = false;
-    document.getElementById('playBtn').textContent = "PLAY";
-  }
-}
-
-function togglePlay() {
-  if (isPlaying) player.pauseVideo();
-  else player.playVideo();
-}
-
-function changeTrack(dir) {
-  trackIdx = (trackIdx + dir + playlist.length) % playlist.length;
-  player.loadVideoById(playlist[trackIdx]);
-}
-
-// Visualizer
-const eq = document.getElementById('eq');
-for(let i=0; i<30; i++) {
-  const bar = document.createElement('div');
-  bar.className = 'eq-bar';
-  eq.appendChild(bar);
-}
-
-function updateEq() {
-  if(!isPlaying) return;
-  const bars = document.querySelectorAll('.eq-bar');
-  bars.forEach(b => {
-    const h = Math.random() * 50;
-    b.style.height = h + 'px';
-    b.style.opacity = Math.random();
-  });
-  setTimeout(updateEq, 100);
-}
-
+    const eq = document.getElementById('eq');
+    for(let i=0; i<18; i++) { const bar = document.createElement('div'); bar.className = 'eq-bar'; eq.appendChild(bar); }
+    function updateEq() {
+        if(!isPlaying) { document.querySelectorAll('.eq-bar').forEach(b => b.style.height = "2px"); return; }
+        document.querySelectorAll('.eq-bar').forEach(b => {
+            b.style.height = (Math.random() * 70 + 2) + "px";
+            b.style.opacity = 0.4 + Math.random() * 0.6;
+        });
+        setTimeout(updateEq, 100);
+    }
 </script>
 </body>
 </html>
