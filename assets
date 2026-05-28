@@ -1,0 +1,9 @@
+project-folder/
+│
+├── index.html
+└── assets/
+    └── logos/
+        ├── arasaka.png
+        ├── trauma.png
+        ├── militech.png
+        └── afterlife.png
