@@ -6,21 +6,16 @@
     <title>NETVIBE // NEURAL_LINK_v2</title>
     <style>
         :root { --yellow:#fcee0a; --cyan:#00f0ff; --cyan-dim:rgba(0,240,255,.16); --gold:#c8b060; --bg:#020406; --red:#ff003c; --magenta:#ff00ff; --green:#00ff9d; --focus:#fcee0a; }
-        *{margin:0;padding:0;box-sizing:border-box}
+        *{margin:0;padding:0;box-sizing:border-box;cursor:none!important}
         html{overflow:hidden;cursor:none}
-        html.show-system-cursor{cursor:auto;overflow:auto}
         body{background:radial-gradient(circle at center,#0a1a22 0%,var(--bg) 72%);color:#fff;font-family:"Courier New",monospace;height:100vh;width:100vw;display:flex;align-items:center;justify-content:center;overflow:hidden}
-        html.show-system-cursor body{min-height:100vh;height:auto;overflow:auto;cursor:auto}
         body::before{content:"";position:fixed;inset:0;background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,.12) 50%);background-size:100% 4px;pointer-events:none;z-index:9999}
         #city-bg{position:fixed;inset:0;pointer-events:none;opacity:.5;z-index:0}
         .tower{position:absolute;bottom:0;left:var(--x);width:var(--w);height:var(--h);background:linear-gradient(180deg,rgba(0,20,32,.8),#000);border-top:2px solid rgba(0,240,255,.35)}
         #cur{position:fixed;width:32px;height:36px;pointer-events:none;z-index:100000;transform:translate(-4px,-2px);filter:drop-shadow(0 0 6px var(--cyan))}
-        html.show-system-cursor #cur{display:none}
         .deck-frame{width:min(96vw,1400px);height:94vh;border:8px solid var(--gold);border-radius:18px;background:rgba(2,5,8,.96);display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1}
-        html.show-system-cursor .deck-frame{width:100vw;min-height:100vh;height:auto;border-width:4px;border-radius:0}
         .keystone-taskbar{height:110px;display:flex;border-bottom:2px solid var(--cyan-dim);background:rgba(0,20,30,.4)}
         .task-tab{flex:1;border:0;border-right:1px solid var(--cyan-dim);background:transparent;color:inherit;font:inherit;display:flex;flex-direction:column;justify-content:center;padding:0 30px;cursor:none;text-align:left}
-        html.show-system-cursor .task-tab,.msg-entry,.music-btn,.net-card{cursor:pointer}
         .task-tab:hover{background:var(--cyan-dim)}
         .task-tab[aria-selected=true]{background:rgba(0,240,255,.11);border-bottom:4px solid var(--cyan)}
         .task-tab:focus-visible{outline:2px solid var(--focus);outline-offset:-4px}
@@ -54,11 +49,21 @@
         .music-btn:disabled{opacity:.35}
         .music-btn.init{background:var(--yellow);color:#000;border-color:var(--yellow)}
         .net-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:18px}
-        .net-card{border:1px solid var(--cyan-dim);padding:24px;background:rgba(0,0,0,.35);font-size:12px;letter-spacing:2px;min-height:100px}
+        .net-card{border:1px solid var(--cyan-dim);padding:10px;background:rgba(0,0,0,.35);font-size:12px;letter-spacing:2px;min-height:100px;display:flex;align-items:center;justify-content:center;gap:10px;flex-direction:column}
+        .net-card img{width:100%;height:52px;object-fit:contain;display:block;filter:drop-shadow(0 0 8px rgba(0,240,255,.22))}
+        .net-card span{font-size:10px;opacity:.9}
         .net-card:hover,.net-card.active{border-color:var(--cyan);background:var(--cyan-dim)}
         .net-feed{border:1px solid var(--cyan-dim);padding:22px;min-height:280px}
         .net-feed h3{color:var(--cyan);letter-spacing:3px;margin-bottom:14px}
         .net-feed p{color:#bed7dc;line-height:1.55;font-size:13px}
+        .incoming-log{margin-top:10px;color:var(--cyan);font-size:12px;border-left:2px solid var(--cyan);padding-left:10px}
+        .system-lock{border:1px solid var(--cyan-dim);padding:20px;background:rgba(0,0,0,.45);max-width:560px}
+        .system-lock h3{color:var(--yellow);margin-bottom:10px}
+        .system-lock p{font-size:12px;color:#bed7dc;line-height:1.4;margin-bottom:12px}
+        .system-lock input{width:100%;background:#000;border:1px solid var(--cyan-dim);color:var(--green);padding:10px;font-family:inherit}
+        .system-lock button{margin-top:10px;border:1px solid var(--cyan);background:none;color:var(--cyan);padding:10px 14px;font-family:inherit}
+        .system-core{margin-top:16px;border:1px solid rgba(0,255,157,.35);padding:16px;background:rgba(0,20,12,.4);display:none}
+        .system-core.unlocked{display:block}
         .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20000;display:none;align-items:center;justify-content:center;padding:20px}
         .modal-backdrop.active{display:flex}
         .reply-window{width:min(640px,92vw);border:2px solid var(--cyan);background:rgba(1,9,14,.98)}
@@ -73,7 +78,7 @@
         .reply-btn.send{border-color:var(--green);color:var(--green)}
         @keyframes johnny{0%,100%{transform:translate(0)}20%{transform:translate(-2px,1px)}40%{transform:translate(2px,-1px)}}
         .glitch{animation:johnny .3s infinite;color:var(--red)!important}
-        @media(max-width:900px){html,html.show-system-cursor{cursor:auto;overflow:auto}body{overflow:auto}.keystone-taskbar{height:auto;flex-direction:column}.dashboard{grid-template-columns:1fr}.net-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:900px){html{overflow:auto}body{overflow:auto;min-height:100vh;height:auto}.deck-frame{width:100vw;min-height:100vh;height:auto;border-width:4px;border-radius:0}.keystone-taskbar{height:auto;flex-direction:column}.dashboard{grid-template-columns:1fr}.net-grid{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:520px){.net-grid{grid-template-columns:1fr}.reply-actions{flex-direction:column}}
         @media(prefers-reduced-motion:reduce){.glitch{animation:none}}
     </style>
@@ -88,9 +93,9 @@
 <svg id="cur" viewBox="0 0 32 36" aria-hidden="true"><g fill="none" stroke="#00f0ff" stroke-width="1.4"><rect x="13" y="4" width="6" height="14" rx="3"/><rect x="19" y="10" width="5.5" height="11" rx="2.5"/><rect x="19" y="21" width="5.5" height="7" rx="2.5"/><rect x="7" y="12" width="5.5" height="9" rx="2.5"/><path d="M7 20 Q6 28 10 31 L23 31 Q27 28 26 21"/><circle cx="16" cy="5" r="1.5" fill="#00f0ff"/></g></svg>
 <div class="deck-frame">
     <header class="keystone-taskbar" role="tablist" aria-label="Deck modules">
-        <button type="button" class="task-tab" role="tab" id="tab0" aria-selected="true" aria-controls="pane-0"><h2>Communications</h2><span>INCOMING_SIGNALS // AUDIO_LINK</span></button>
+        <button type="button" class="task-tab" role="tab" id="tab0" aria-selected="true" aria-controls="pane-0"><h2>Messages</h2><span>INCOMING_SIGNALS // AUDIO_LINK</span></button>
         <button type="button" class="task-tab" role="tab" id="tab1" aria-selected="false" aria-controls="pane-1"><h2>Net Database</h2><span>NETDIR://NCITY.PUB</span></button>
-        <button type="button" class="task-tab" role="tab" disabled aria-disabled="true"><h2>System</h2><span>ENCRYPTION: 256-BIT // ACTIVE</span></button>
+        <button type="button" class="task-tab" role="tab" id="tab2" aria-selected="false" aria-controls="pane-2"><h2>System</h2><span>ENCRYPTION: 256-BIT // ACTIVE</span></button>
     </header>
     <div class="hud-center">
         <div class="world-mood" id="world-mood">INITIALIZING...</div>
@@ -101,14 +106,15 @@
         <section class="pane active" id="pane-0" role="tabpanel" aria-labelledby="tab0">
             <div class="dashboard">
                 <div class="msg-window">
-                    <div class="msg-header">INCOMING_SIGNALS // ENCRYPTED // SELECT TO REPLY</div>
+                    <div class="msg-header">MESSAGES // ENCRYPTED // SELECT TO REPLY</div>
                     <div class="msg-content">
-                        <article class="msg-entry" tabindex="0" data-sender="JOHNNY"><span class="msg-sender glitch">JOHNNY</span><span class="msg-text">Wake up, samurai. We got a city to burn.</span></article>
-                        <article class="msg-entry" tabindex="0" data-sender="JUDY"><span class="msg-sender" style="color:var(--magenta)">JUDY</span><span class="msg-text">Hey V. You're my only emotional anchor in this ghost town.</span></article>
-                        <article class="msg-entry" tabindex="0" data-sender="VIKTOR"><span class="msg-sender" style="color:var(--green)">VIKTOR</span><span class="msg-text">Come by the clinic before your optics fry.</span></article>
-                        <article class="msg-entry" tabindex="0" data-sender="FIXER"><span class="msg-sender" style="color:var(--gold)">FIXER</span><span class="msg-text">New job board updated. Street life doesn't wait.</span></article>
-                        <article class="msg-entry" tabindex="0" data-sender="DELAMAIN"><span class="msg-sender" style="color:var(--cyan)">DELAMAIN</span><span class="msg-text">Your vehicle route is being monitored.</span></article>
-                        <article class="msg-entry" tabindex="0" data-sender="ARASAKA"><span class="msg-sender" style="color:#fff">ARASAKA</span><span class="msg-text">Every step you take is logged, V.</span></article>
+                        <article class="msg-entry" tabindex="0" data-sender="JOHNNY"><span class="msg-sender glitch">JOHNNY</span><span class="msg-text">Chaos pulse online. Glitch consciousness is trying to talk through your chrome again.</span></article>
+                        <article class="msg-entry" tabindex="0" data-sender="JUDY"><span class="msg-sender" style="color:var(--magenta)">JUDY</span><span class="msg-text">You still my emotional anchor, V. Don’t go ghost on me tonight.</span></article>
+                        <article class="msg-entry" tabindex="0" data-sender="VIKTOR"><span class="msg-sender" style="color:var(--green)">VIKTOR</span><span class="msg-text">Your bodyware sync is drifting. Come in before your optics burn hot.</span></article>
+                        <article class="msg-entry" tabindex="0" data-sender="FIXER"><span class="msg-sender" style="color:var(--gold)">FIXER (ROGUE/WAKAKO)</span><span class="msg-text">Jobs are stacking and street life never sleeps. You in or not?</span></article>
+                        <article class="msg-entry" tabindex="0" data-sender="DELAMAIN"><span class="msg-sender" style="color:var(--cyan)">DELAMAIN</span><span class="msg-text">AI city routing system is active. I can optimize your path through hostile zones.</span></article>
+                        <article class="msg-entry" tabindex="0" data-sender="ARASAKA"><span class="msg-sender" style="color:#fff">CORPO (ARASAKA)</span><span class="msg-text">Surveillance pressure escalating. Your movement pattern has been flagged.</span></article>
+                        <article class="msg-entry" tabindex="0" data-sender="NETRUNNER"><span class="msg-sender" style="color:#7fd7ff">NETRUNNER</span><span class="msg-text">Net-space is noisy tonight. ICE walls are thin and someone is scraping your signal.</span></article>
                     </div>
                 </div>
                 <aside class="music-sidebar" aria-label="Audio link">
@@ -125,12 +131,24 @@
         </section>
         <section class="pane" id="pane-1" role="tabpanel" aria-labelledby="tab1" hidden>
             <div class="net-grid">
-                <button type="button" class="net-card active" data-site="arasaka">ARASAKA // DIRECTORY</button>
-                <button type="button" class="net-card" data-site="trauma">TRAUMA_TEAM // PORTAL</button>
-                <button type="button" class="net-card" data-site="militech">MILITECH // SECURE_LINE</button>
-                <button type="button" class="net-card" data-site="afterlife">AFTERLIFE // NETWORK</button>
+                <button type="button" class="net-card active" data-site="arasaka"><img src="./assets/logos/arasaka.png" alt="Arasaka logo"><span>ARASAKA // DIRECTORY</span></button>
+                <button type="button" class="net-card" data-site="trauma"><img src="./assets/logos/trauma.png" alt="Trauma Team logo"><span>TRAUMA_TEAM // PORTAL</span></button>
+                <button type="button" class="net-card" data-site="militech"><img src="./assets/logos/militech.png" alt="Militech logo"><span>MILITECH // SECURE_LINE</span></button>
+                <button type="button" class="net-card" data-site="afterlife"><img src="./assets/logos/afterlife.png" alt="Afterlife logo"><span>AFTERLIFE // NETWORK</span></button>
             </div>
             <div class="net-feed" id="net-feed" aria-live="polite"></div>
+        </section>
+        <section class="pane" id="pane-2" role="tabpanel" aria-labelledby="tab2" hidden>
+            <div class="system-lock">
+                <h3>SYSTEM CORE // LOCKED</h3>
+                <p>Enter passphrase to access encrypted controls.</p>
+                <input id="systemPassword" type="password" autocomplete="off" placeholder="PASSCODE">
+                <button type="button" id="unlockSystem">UNLOCK SYSTEM</button>
+                <p id="systemHint" aria-live="polite">AUTH REQUIRED.</p>
+                <div class="system-core" id="systemCore">
+                    <p>Root controls online. Local telemetry, message relays, and surveillance countermeasures are now accessible.</p>
+                </div>
+            </div>
         </section>
     </div>
 </div>
@@ -152,6 +170,7 @@
 <script>
 (function () {
     var PLAYLIST_ID = "PLDisKgcnAC4SqX0mi1J5_gd7-hrIS5yJp";
+    var SYSTEM_PASSWORD = "samurai2077";
     var YT_TIMEOUT = 12000;
     var FALLBACK = ["FALLBACK: PACIFICA GHOST PULSE", "FALLBACK: KABUKI NEON RUN", "FALLBACK: CITY CENTER BLACK ICE"];
     var netCopy = {
@@ -173,16 +192,46 @@
     var incomingPreview = document.getElementById("incomingPreview");
     var replyText = document.getElementById("replyText");
     var netFeed = document.getElementById("net-feed");
-    var tabs = Array.prototype.slice.call(document.querySelectorAll('.task-tab[role="tab"]:not([disabled])'));
-    var panes = [document.getElementById("pane-0"), document.getElementById("pane-1")];
+    var systemPassword = document.getElementById("systemPassword");
+    var unlockSystem = document.getElementById("unlockSystem");
+    var systemHint = document.getElementById("systemHint");
+    var systemCore = document.getElementById("systemCore");
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.task-tab[role="tab"]'));
+    var panes = [document.getElementById("pane-0"), document.getElementById("pane-1"), document.getElementById("pane-2")];
+    var autoReplies = {
+        JOHNNY: [
+            "Static screams back. Keep the chaos alive.",
+            "Reality is a bug, V. Push through it."
+        ],
+        JUDY: [
+            "Thanks for answering. Needed to hear your voice in text form.",
+            "Stay safe out there, okay? I'm serious."
+        ],
+        VIKTOR: [
+            "Good. I will prep the chair and diagnostics.",
+            "Body can be patched, but not if you wait too long."
+        ],
+        FIXER: [
+            "Copy that. Sending coordinates and payout details.",
+            "Street hears everything. I like your timing."
+        ],
+        DELAMAIN: [
+            "Acknowledged. Updating route through low-risk sectors.",
+            "Optimized. Your ETA has improved by 17 percent."
+        ],
+        ARASAKA: [
+            "Your compliance has been logged by the corporate network.",
+            "Observation continues. Deviations will be noted."
+        ],
+        NETRUNNER: [
+            "Packet received. Meet me in the net-space dead zone.",
+            "Copy, choom. ICE map is attached in fragments."
+        ]
+    };
 
     var player = null, ytReady = false, ytFailed = false, useFallback = false, wantsLink = false;
     var isPlaying = false, eqTimer = null, fallbackTrack = 0, fallbackTimer = null, activeMessage = null, audioCtx = null;
     var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (reducedMotion || window.matchMedia("(pointer: coarse)").matches || window.innerWidth <= 900) {
-        document.documentElement.classList.add("show-system-cursor");
-    }
 
     document.addEventListener("mousemove", function (e) {
         cur.style.left = e.clientX + "px";
@@ -220,14 +269,16 @@
 
     function updateHUD() {
         var now = new Date(), hrs = now.getHours();
-        var moods = [
-            { h: 5, m: "LOW TRAFFIC GRID / CLEAN SIGNALS", s: "WELCOME BACK, V. NOTHING HAS CHANGED." },
-            { h: 11, m: "CORPORATE NETWORKS ACTIVE", s: "SYSTEM NOTICE: YOU ARE NOT ALONE." },
-            { h: 17, m: "NEON LOAD PEAK / DATA FLOW HIGH", s: "GOOD EVENING, V. THE CITY IS STILL WATCHING." },
-            { h: 23, m: "BLACKOUT SECTORS RISING", s: "SYSTEM NOTICE: YOU ARE NOT ALONE." }
-        ];
-        var current = moods[moods.length - 1];
-        for (var i = 0; i < moods.length; i++) if (hrs >= moods[i].h) current = moods[i];
+        var current;
+        if (hrs >= 6 && hrs < 12) {
+            current = { m: "LOW TRAFFIC GRID / CLEAN SIGNALS", s: "WELCOME BACK, V. NOTHING HAS CHANGED." };
+        } else if (hrs >= 12 && hrs < 18) {
+            current = { m: "CORPORATE NETWORKS ACTIVE", s: "SYSTEM NOTICE: YOU ARE NOT ALONE." };
+        } else if (hrs >= 18 && hrs < 22) {
+            current = { m: "NEON LOAD PEAK / DATA FLOW HIGH", s: "GOOD EVENING, V. THE CITY IS STILL WATCHING." };
+        } else {
+            current = { m: "BLACKOUT SECTORS RISING", s: "SYSTEM NOTICE: YOU ARE NOT ALONE." };
+        }
         document.getElementById("world-mood").textContent = current.m;
         document.getElementById("status-msg").textContent = current.s;
         document.getElementById("clock").textContent = String(hrs).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
@@ -255,10 +306,21 @@
         if (!text) { replyText.focus(); return; }
         var old = activeMessage.querySelector(".reply-log");
         if (old) old.remove();
+        var oldIncoming = activeMessage.querySelector(".incoming-log");
+        if (oldIncoming) oldIncoming.remove();
         var log = document.createElement("div");
         log.className = "reply-log";
         log.textContent = "YOU_SENT: " + text;
         activeMessage.appendChild(log);
+        var sender = activeMessage.dataset.sender;
+        setTimeout(function () {
+            if (!activeMessage && !document.body.contains(log)) return;
+            var incoming = document.createElement("div");
+            incoming.className = "incoming-log";
+            var options = autoReplies[sender] || ["Received."];
+            incoming.textContent = "INCOMING: " + options[Math.floor(Math.random() * options.length)];
+            log.parentElement.appendChild(incoming);
+        }, 900 + Math.floor(Math.random() * 1200));
         closeReply();
     }
     document.querySelectorAll(".msg-entry").forEach(function (entry) {
@@ -285,6 +347,21 @@
         });
     });
     document.querySelector('.net-card[data-site="arasaka"]').click();
+
+    function attemptSystemUnlock() {
+        if (systemPassword.value === SYSTEM_PASSWORD) {
+            systemHint.textContent = "ACCESS GRANTED.";
+            systemCore.classList.add("unlocked");
+            systemPassword.value = "";
+            return;
+        }
+        systemHint.textContent = "ACCESS DENIED.";
+        systemCore.classList.remove("unlocked");
+    }
+    unlockSystem.addEventListener("click", attemptSystemUnlock);
+    systemPassword.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") attemptSystemUnlock();
+    });
 
     var eq = document.getElementById("eq");
     for (var b = 0; b < 18; b++) {
